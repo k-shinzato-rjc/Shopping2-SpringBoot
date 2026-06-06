@@ -1,5 +1,7 @@
 package com.example.shopping.dto;
 
+import java.io.Serializable;
+
 import com.example.shopping.entity.MenuEntity;
 import com.example.shopping.form.MenuForm;
 
@@ -10,7 +12,7 @@ import lombok.Data;
  * @author koki_shinzato
  */
 @Data
-public class MenuDto {
+public class MenuDto implements Serializable{
 	
 	// 商品ID
 	private Integer id;
