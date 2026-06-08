@@ -56,6 +56,7 @@ public class CartService {
 	 * @param cartDto カート情報
 	 * @return 登録済み情報
 	 */
+	@org.springframework.transaction.annotation.Transactional
 	public void add(Integer id) {
 		Optional<CartEntity> op = cartRepository.findById(id);
 		
@@ -87,14 +88,13 @@ public class CartService {
 	 * カート情報（セッション）をDBへ反映
 	 * 反映前にDB情報（古い情報）は全削除する
 	 */
+	@org.springframework.transaction.annotation.Transactional
 	public void update(List<CartDto> sessionCartList) {
 		
 		cartRepository.deleteAll();
 		
 		List<CartEntity> entityList = convertFromDtoToEntity(sessionCartList);
-		entityList.stream().forEach(entity -> {
-			cartRepository.save(entity);
-		});
+		cartRepository.saveAll(entityList);
 	}
 	
 	/**
@@ -112,7 +112,8 @@ public class CartService {
 	public void deleteAll() {
 		cartRepository.deleteAll();
 	}
-
+	
+	@org.springframework.transaction.annotation.Transactional
 	public void changeQuantity(Integer commodityId,Integer quantity) {
 		
 		Optional<CartEntity> op = cartRepository.findById(commodityId);

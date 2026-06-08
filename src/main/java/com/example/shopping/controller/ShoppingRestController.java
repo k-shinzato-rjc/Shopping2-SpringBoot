@@ -41,6 +41,8 @@ public class ShoppingRestController {
 	/**
 	 * 全メニュー情報を取得し、セッションに格納
 	 * @return セッション内 商品リスト（Json）
+	 * 
+	 * 合格
 	 */
 	@SuppressWarnings("unchecked")
 	@ResponseBody
@@ -55,22 +57,32 @@ public class ShoppingRestController {
 			httpSession.setAttribute("orders", newSession);
 		}
 		
-		List<MenuDto> dtoList = menuService.findAll();
-		httpSession.setAttribute("menus", dtoList);
+		List<MenuDto> menuList = menuService.findAll();
+		httpSession.setAttribute("menus", menuList);
 		
-		return dtoList;
+		return menuList;
 	}
 	
 	/**
-	 * カート情報を取得し、セッションに格納
+	 * セッションからカート情報を取得し、返す
 	 * @return セッション内 カート内商品リスト（Json）
 	 */
 	@ResponseBody
 	@SuppressWarnings("unchecked")
 	@GetMapping("/cart/list")
 	public List<CartDto> cartList(HttpSession httpSession) {
-
-		return (List<CartDto>)httpSession.getAttribute("orders");
+		
+		List<CartDto> orderList = (List<CartDto>)httpSession.getAttribute("orders");
+		
+		// 修正追加
+		if(Objects.isNull(orderList)) {
+			
+			orderList = new ArrayList<CartDto>();
+			httpSession.setAttribute("orders", orderList);
+			return orderList;
+		}
+		
+		return orderList;
 	}
 	
 	/**
@@ -91,20 +103,22 @@ public class ShoppingRestController {
 	@PostMapping("/cart/order/add")
 	public void cartAdd(HttpSession httpSession, @RequestParam(name="id") Integer id) {
 		
+		System.out.println("OK");
+		
 		@SuppressWarnings("unchecked")
 		List<CartDto> sessionOrders = (List<CartDto>) httpSession.getAttribute("orders");
 		
-		if (sessionOrders == null) {
+		if(Objects.isNull(sessionOrders)) {
 			sessionOrders = new ArrayList<CartDto>();
+			
+			List<CartDto> newCartList = sessionService.sessionAddId(sessionOrders, id);
+			httpSession.setAttribute("orders", newCartList);
+			
+			return;
 		}
 		
 		@SuppressWarnings("unchecked")
 		List<CartDto> editcartList = sessionService.sessionAddId(sessionOrders, id);
-		
-		// テスト
-		editcartList.stream().forEach(cart -> {
-			System.out.println(cart.getCommodityId());
-		});
 		
 		httpSession.setAttribute("orders", editcartList);
 	}
@@ -160,9 +174,12 @@ public class ShoppingRestController {
 	@GetMapping("/cart/regist")
 	public void registCart(HttpSession httpSession) {
 		
-		cartService.deleteAll();
-		
 		List<CartDto> sessionList = (List<CartDto>)httpSession.getAttribute("orders");
+		
+		if(Objects.isNull(sessionList)) {
+			sessionList = new ArrayList<CartDto>();
+		}
+			
 		cartService.update(sessionList);
 	}
 	

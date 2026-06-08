@@ -2,7 +2,6 @@ package com.example.shopping.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,23 +50,29 @@ public class SessionService {
 	 */
 	public List<CartDto> sessionAddId(List<CartDto> sessionList, Integer commodityId) {
 
-		sessionList.stream().filter(session -> session.getCommodityId() == commodityId).forEach(session -> {
-			
-			if(Objects.nonNull(session)) {	
-				session.setQuantity(session.getQuantity() + 1);
+		List<CartDto> newSessionList = new ArrayList<CartDto>();
+		boolean flag = false;
+		
+		for(CartDto order : sessionList) {
+			if(commodityId.equals(order.getCommodityId())) {
 				
-			}else {
-				CartDto newOrder = new CartDto();
-				MenuDto findMenu = menuService.findById(commodityId);
-				
-				newOrder.setCommodityId(commodityId);
-				newOrder.setQuantity(1);
-				newOrder.setMenu(findMenu);
-				
-				sessionList.add(newOrder);
+				order.setQuantity(order.getQuantity() + 1);
+				flag = true;
 			}
-		});
-
+		}
+		
+		if(!flag) {
+			MenuDto newMenu = menuService.findById(commodityId);
+			CartDto newOrder = new CartDto();
+			
+			newOrder.setCommodityId(commodityId);
+			newOrder.setQuantity(1);
+			newOrder.setMenu(newMenu);
+			
+			sessionList.add(newOrder);
+			return sessionList;
+		}
+		
 		return sessionList;
 	}
 }
